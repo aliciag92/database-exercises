@@ -59,6 +59,9 @@ not include albums with a genre of "Hard rock" or "Progressive rock"?
 
 or
 
+
     SELECT * 
     FROM albums 
-    WHERE genre = "Rock"
+    WHERE genre LIKE '%Rock%'; 
+
+#will pull any string with the word rock mentioned like alternative rock, and soft rock
