@@ -24,4 +24,4 @@ ORDER BY hire_date
 LIMIT 5 OFFSET 45;
 
 #LIMIT and OFFSET can be used to create multiple pages of data. What is the relationship between OFFSET (number of results to skip), LIMIT (number of results per page), and the page number?
-no se
+pg you want minus one times the limit you have for each page, will give you the offset
