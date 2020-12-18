@@ -19,8 +19,8 @@ WHERE first_name = 'Irena' OR first_name = 'Vidya' OR first_name = 'Maya';		#709
 #Find all current or previous employees with first names 'Irena', 'Vidya', or 'Maya', using OR, and who is male. Enter a comment with the number of records returned.
 SELECT *
 FROM employees
-WHERE first_name = 'Irena' OR first_name = 'Vidya' OR first_name = 'Maya'
-AND gender = 'M';		#619
+WHERE (first_name = 'Irena' OR first_name = 'Vidya' OR first_name = 'Maya')
+AND gender = 'M';		#441
 
 
 #Find all current or previous employees whose last name starts with 'E'. Enter a comment with the number of employees whose last name starts with E.
@@ -29,16 +29,20 @@ FROM employees
 WHERE last_name LIKE 'E%';		#7330
 
 
-#Find all current or previous employees whose last name starts or ends with 'E'. Enter a comment with the number of employees whose last name starts or ends with E. How many employees have a last name that ends with E, but does not start with E?
+#Find all current or previous employees whose last name starts or ends with 'E'. Enter a comment with the number of employees whose last name starts or ends with E. 
 SELECT *
 FROM employees
 WHERE last_name LIKE '%E' OR last_name LIKE 'E%';		#30723
 
+#How many employees have a last name that ends with E, but does not start with E?
 
-#Find all current or previous employees employees whose last name starts and ends with 'E'. Enter a comment with the number of employees whose last name starts and ends with E. How many employees last names end with E, regardless of whether they start with E?
+
+#Find all current or previous employees employees whose last name starts and ends with 'E'. Enter a comment with the number of employees whose last name starts and ends with E. 
 SELECT *
 FROM employees
 WHERE last_name LIKE '%E' AND last_name LIKE 'E%';		#899
+
+How many employees last names end with E, regardless of whether they start with E?
 
 
 #Find all current or previous employees hired in the 90s. Enter a comment with the number of employees returned.
