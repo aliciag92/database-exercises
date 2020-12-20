@@ -1,4 +1,6 @@
 #1. Copy the order by exercise and save it as functions_exercises.sql.
+USE employees;
+
 #2. Write a query to to find all current employees whose last name starts and ends with 'E'. Use concat() to combine their first and last name together as a single column named full_name.
 SELECT concat(first_name, " ", last_name) as full_name
 from employees
@@ -22,7 +24,7 @@ SELECT MIN(salary), MAX(salary)
 FROM salaries
 WHERE to_date > curdate();
 
-or
+#or
 
 SELECT MIN(salary) as smallest_emp_salary, MAX(salary) as highest_emp_salary
 FROM salaries;
@@ -31,7 +33,7 @@ FROM salaries;
 SELECT LOWER(CONCAT(SUBSTR(first_name, 1, 1), SUBSTR(last_name, 1, 4), '_', SUBSTR(birth_date, 6, 2), SUBSTR(birth_date, 3, 2))) AS username, first_name, last_name, birth_date
 FROM employees;
 
-or
+#or
 
 SELECT LOWER(
             CONCAT(
@@ -41,6 +43,17 @@ SELECT LOWER(
         SUBSTR(birth_date, 6, 2),
         SUBSTR(birth_date, 3, 2)
             )) AS username, first_name, last_name, birth_date
+FROM employees;
+
+#or
+
+SELECT LOWER(
+        CONCAT(
+    SUBSTR(first_name, 1, 1), 
+    SUBSTR(last_name, 1, 4),
+    '_', 
+    SUBSTR(CAST(birth_date AS CHAR), 6, 2)
+        )) AS username, first_name, last_name, birth_date
 FROM employees;
 
 #+------------+------------+-----------+------------+
