@@ -62,7 +62,15 @@ select first_name, last_name,
 		ELSE 'R-Z'
 	END as alpha_group
 from employees
-group by first_name, last_name;
+group by first_name, last_name; 
+
+#The LEFT() function extracts a number of characters from a string (starting from left). If the number exceeds the number of characters in string, it returns string
+#Syntax: LEFT(string, number_of_chars)
+#Example: Extract 3 characters from a string (starting from left): 
+SELECT LEFT('SQL Tutorial', 3) AS ExtractString; #SQL
+
+#Example: Extract 100 characters from a string (starting from left):
+SELECT LEFT('SQL Tutorial', 100) AS ExtractString; #SQL Tutorial
 
 #3. How many employees (current or previous) were born in each decade?
 SELECT  
