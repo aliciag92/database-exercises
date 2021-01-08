@@ -44,6 +44,16 @@ FROM employees
 JOIN dept_emp USING (emp_no)
 order by alpha_group, last_name;
 
+#alternate: 
+select first_name, last_name, 
+case
+	when last_name < 'I' then 'A-H'
+	when last_name < 'R' then 'I-Q'
+	when last_name > 'Q' then 'R-Z'	
+	else null
+	end as alpha_group	
+from employees;
+
 #alternate solution: Using REGEXP 'Regular Expression' ( ^ = Start of string, | = or ) 
 select 
 	case 	when last_name REGEXP '^(A|B|C|D|E|F|G|H)' then 'A-H'
@@ -80,6 +90,24 @@ SELECT
 			WHEN birth_date LIKE '196%' THEN 1 END) as "employees_born_in_60s"
 FROM employees;
 
+#alternate solution:
+-- Oldest birth dates in 1952, 19605 the most recent.
+SELECT * 
+FROM employees
+ORDER BY birth_date DESC
+LIMIT 5;
+
+-- Create and count the decade bins.
+SELECT
+	CASE
+		WHEN birth_date LIKE '195%' THEN '50s'
+		WHEN birth_date LIKE '196%' THEN '60s'
+		ELSE 'YOUNG' 		#good to have an else statement just in case
+	END AS decade,
+	COUNT(*)
+FROM employees
+GROUP BY decade;
+
 #-BONUS
 #1. What is the current average salary for each of the following department groups: R&D, Sales & Marketing, Prod & QM, Finance & HR, Customer Service?
 SELECT 
@@ -91,8 +119,8 @@ SELECT
 		ELSE 'Customer Service'
 	END AS department_group,
 	ROUND(AVG(salary), 2) AS average_salary
-FROM employees_with_departments AS ewd
-JOIN salaries AS s ON s.emp_no = ewd.emp_no AND s.to_date > CURDATE()
+FROM salaries
+JOIN employees_with_departments ON salaries.emp_no = employees_with_departments.emp_no AND salaries.to_date > CURDATE()
 GROUP BY department_group; 
 +-------------------+-----------------+
 | dept_group        | avg_salary      |
