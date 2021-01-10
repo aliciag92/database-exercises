@@ -1,15 +1,56 @@
 #Create a file named more_exercises.sql to do your work in. Write the appropriate USE statements to switch databases as necessary.
 
 #Employees Database
+USE employees;
 #1. How much do the current managers of each department get paid, relative to the average salary for the department? Is there any department where the department manager gets paid less than the average salary?
+
+#finds current managers for each department and their salary:
+SELECT first_name, last_name, dept_name, salary
+FROM employees
+JOIN dept_emp USING (emp_no)
+JOIN departments USING (dept_no)
+JOIN dept_manager USING (emp_no)
+JOIN salaries USING (emp_no)
+WHERE salaries.to_date > CURDATE(); #24 rows for the multiple managers in each department
+
+#finds average salary for each department:
+SELECT ROUND(AVG(salary), 2) AS dept_avg_salary, dept_name
+FROM salaries
+JOIN dept_emp USING (emp_no)
+JOIN departments USING (dept_no)
+GROUP BY dept_name; #9 rows: Cust Serv 58770.37, Development 59478.90, Finance 70489.36, HR 55574.88, Marketing 71913.20, Production 59605.48, Quality Management 57251.27, Research 59665.18, Sales 80667.61
+
+#join it all together with a case statement to get the column we want:
+SELECT first_name, last_name, dept_name, salary, 
+	CASE
+		WHEN dept_name IN ('Customer Service') THEN 58770.37
+		WHEN dept_name IN ('Development') THEN 59478.90
+		WHEN dept_name IN ('Finance') THEN 70489.36
+		WHEN dept_name IN ('Human Resources') THEN 55574.88
+		WHEN dept_name IN ('Marketing') THEN 71913.20
+		WHEN dept_name IN ('Production') THEN 59605.48
+		WHEN dept_name IN ('Quality Management') THEN 57251.27
+		WHEN dept_name IN ('Research') THEN 59665.18
+		WHEN dept_name IN ('Sales') THEN 80667.61
+	END AS dept_average_salary
+FROM employees
+JOIN dept_emp USING (emp_no)
+JOIN departments USING (dept_no)
+JOIN dept_manager USING (emp_no)
+JOIN salaries USING (emp_no)
+WHERE salaries.to_date > CURDATE();
+
 
 
 #World Database
 #Use the world database for the questions below.
-
+USE world;
 #1. What languages are spoken in Santa Monica?
-
-
+SELECT Language, Percentage
+FROM countrylanguage
+JOIN city USING (CountryCode)
+WHERE name = 'Santa Monica'
+ORDER BY percentage;
 +------------+------------+
 | Language   | Percentage |
 +------------+------------+
@@ -29,8 +70,10 @@
 12 rows in set (0.01 sec)
 
 #2. How many different countries are in each region?
-
-
+SELECT Region, COUNT(name) AS num_countries
+FROM country
+GROUP BY region
+ORDER BY num_countries;
 +---------------------------+---------------+
 | Region                    | num_countries |
 +---------------------------+---------------+
@@ -63,8 +106,10 @@
 25 rows in set (0.00 sec)
 
 #3. What is the population for each region?
-
-
+SELECT Region, SUM(population) AS population
+FROM country
+GROUP BY region
+ORDER BY population DESC; #needs sum to find overall population of all countries in each region
 +---------------------------+------------+
 | Region                    | population |
 +---------------------------+------------+
@@ -97,8 +142,10 @@
 25 rows in set (0.00 sec)
 
 #4. What is the population for each continent?
-
-
+SELECT continent, SUM(population) AS population
+FROM country
+GROUP BY continent
+ORDER BY population DESC;
 +---------------+------------+
 | Continent     | population |
 +---------------+------------+
@@ -113,8 +160,8 @@
 7 rows in set (0.00 sec)
 
 #5. What is the average life expectancy globally?
-
-
+SELECT AVG(LifeExpectancy)
+FROM country;
 +---------------------+
 | avg(LifeExpectancy) |
 +---------------------+
@@ -122,9 +169,11 @@
 +---------------------+
 1 row in set (0.00 sec)
 
-#6. What is the average life expectancy for each region, each continent? Sort the results from shortest to longest
-
-
+#6. Average life expectancy for each continent? Sort the results from shortest to longest
+SELECT Continent, AVG(LifeExpectancy) AS life_expectancy
+FROM country
+GROUP BY continent
+ORDER BY life_expectancy;
 +---------------+-----------------+
 | Continent     | life_expectancy |
 +---------------+-----------------+
@@ -138,6 +187,12 @@
 +---------------+-----------------+
 7 rows in set (0.00 sec)
 
+
+#6. What is the average life expectancy for each region? Sort the results from shortest to longest
+SELECT Region, AVG(LifeExpectancy) AS life_expectancy
+FROM country
+GROUP BY region
+ORDER BY life_expectancy;
 +---------------------------+-----------------+
 | Region                    | life_expectancy |
 +---------------------------+-----------------+
@@ -171,12 +226,72 @@
 
 ##Bonus
 #1. Find all the countries whose local name is different from the official name
-#2. How many countries have a life expectancy less than x?
-#3. What state is city x located in?
-#4. What region of the world is city x located in?
-#5. What country (use the human readable name) city x located in?
-#6. What is the life expectancy in city x?
+SELECT name, localname
+FROM country
+WHERE LocalName NOT LIKE name;
 
+#2. How many countries have a life expectancy less than x?
+SELECT name, LifeExpectancy
+FROM country
+WHERE LifeExpectancy < 50; #28
+
+SELECT name, LifeExpectancy
+FROM country
+WHERE LifeExpectancy < 100; #222
+
+SELECT name, LifeExpectancy
+FROM country
+WHERE LifeExpectancy < 40; #7
+
+#3. What state is city x located in?
+SELECT name, district
+FROM city
+WHERE name = 'New Orleans'; #New Orleans  Louisiana
+
+SELECT name, district
+FROM city
+WHERE name = 'Laredo'; #Laredo  Texas
+
+SELECT name, district
+FROM city
+WHERE name = 'Monterrey'; #Monterrey  Nuevo Leon
+
+SELECT name, district
+FROM city
+WHERE name = 'Nuevo Laredo'; #Nuevo Laredo	Tamaulipas
+
+#4. What region of the world is city x located in?
+SELECT city.name, region
+FROM country
+JOIN city ON city.countrycode = country.code
+WHERE city.name = 'New York'; #New York     North America
+
+SELECT city.name, region
+FROM country
+JOIN city ON city.countrycode = country.code
+WHERE city.name = 'Sydney'; #Sydney	Australia and New Zealand
+
+#5. What country (use the human readable name) city x located in?
+SELECT city.name, country.name
+FROM country
+JOIN city ON city.countrycode = country.code
+WHERE city.name = 'San Antonio'; #San Antonio	United States
+
+SELECT city.name, country.name
+FROM country
+JOIN city ON city.countrycode = country.code
+WHERE city.name = 'Toronto'; #Toronto	Canada
+
+#6. What is the life expectancy in city x?
+SELECT city.name, lifeexpectancy
+FROM country
+JOIN city ON city.countrycode = country.code
+WHERE city.name = 'San Antonio'; #77.1
+
+SELECT city.name, lifeexpectancy
+FROM country
+JOIN city ON city.countrycode = country.code
+WHERE city.name = 'Buenos Aires'; #75.1
 
 #Sakila Database
 #1. Display the first and last names in all lowercase of all the actors.
