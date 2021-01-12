@@ -331,80 +331,188 @@ GROUP BY last_name
 HAVING COUNT(last_name) = 2;
 
 #8. You cannot locate the schema of the address table. Which query would you use to re-create it?
-#9. Use JOIN to display the first and last names, as well as the address, of each staff member.
-#10. Use JOIN to display the total amount rung up by each staff member in August of 2005.
-#11. List each film and the number of actors who are listed for that film.
-#12. How many copies of the film Hunchback Impossible exist in the inventory system?
-#13. The music of Queen and Kris Kristofferson have seen an unlikely resurgence. As an unintended consequence, films starting with the letters K and Q have also soared in popularity. Use subqueries to display the titles of movies starting with the letters K and Q whose language is English.
-#14. Use subqueries to display all actors who appear in the film Alone Trip.
-#15. You want to run an email marketing campaign in Canada, for which you will need the names and email addresses of all Canadian customers.
-#16. Sales have been lagging among young families, and you wish to target all family movies for a promotion. Identify all movies categorized as famiy films.
-#17. Write a query to display how much business, in dollars, each store brought in.
-#18. Write a query to display for each store its store ID, city, and country.
-#19. List the top five genres in gross revenue in descending order. (Hint: you may need to use the following tables: category, film_category, inventory, payment, and rental.)
+SELECT *
+FROM address;
 
+#9. Use JOIN to display the first and last names, as well as the address, of each staff member.
+SELECT first_name, last_name, address
+FROM staff 
+JOIN address USING (address_id);
+
+#10. Use JOIN to display the total amount rung up by each staff member in August of 2005.
+SELECT first_name, last_name, SUM(amount) AS total_amount
+FROM staff
+JOIN payment USING (staff_id)
+WHERE payment_date LIKE '2005-08-%'
+GROUP BY first_name, last_name;
+
+#11. List each film and the number of actors who are listed for that film.
+SELECT title, COUNT(actor_id) AS number_of_actors
+FROM film
+JOIN film_actor USING (film_id)
+GROUP BY title;
+
+#12. How many copies of the film Hunchback Impossible exist in the inventory system?
+SELECT title, COUNT(*) AS number_of_copies
+FROM film
+JOIN inventory USING (film_id)
+WHERE title = 'Hunchback Impossible';
+
+#13. The music of Queen and Kris Kristofferson have seen an unlikely resurgence. As an unintended consequence, films starting with the letters K and Q have also soared in popularity. Use subqueries to display the titles of movies starting with the letters K and Q whose language is English.
+SELECT title, language.name
+FROM film
+JOIN language USING (language_id)
+WHERE language.name = 
+	(SELECT language.name
+	FROM language
+	WHERE language.name = 'English')
+AND title LIKE 'K%' OR title LIKE 'Q%';
+
+#14. Use subqueries to display all actors who appear in the film Alone Trip.
+SELECT first_name, last_name, title 
+FROM film
+JOIN film_actor USING (film_id)
+JOIN actor USING (actor_id)
+WHERE title = 
+	(SELECT title
+	FROM film
+	WHERE title = "Alone Trip");
+
+#15. You want to run an email marketing campaign in Canada, for which you will need the names and email addresses of all Canadian customers.
+SELECT first_name, last_name, email
+FROM customer;
+
+#16. Sales have been lagging among young families, and you wish to target all family movies for a promotion. Identify all movies categorized as famiy films.
+SELECT title, category.name
+FROM film
+JOIN film_category USING (film_id)
+JOIN category USING (category_id)
+WHERE category.name = 'Family';
+
+#17. Write a query to display how much business, in dollars, each store brought in.
+SELECT CONCAT(city.city,', ',country.country) AS `Store`, store.store_id AS 'Store ID', SUM(payment.amount) as `Total Sales` 
+FROM payment
+JOIN rental USING (rental_id)
+JOIN inventory USING (inventory_id)
+JOIN store USING (store_id)
+JOIN address USING (address_id)
+JOIN city USING (city_id)
+JOIN country USING (country_id)
+GROUP BY store.store_id;
+
+#18. Write a query to display for each store its store ID, city, and country.
+SELECT store.store_id, city.city, country.country
+FROM store
+JOIN address USING (address_id)
+JOIN city USING (city_id)
+JOIN country USING (country_id);
+
+#19. List the top five genres in gross revenue in descending order. (Hint: you may need to use the following tables: category, film_category, inventory, payment, and rental.)
+SELECT category.name, SUM(payment.amount) AS gross_revenue
+FROM category
+JOIN film_category USING (category_id)
+JOIN inventory USING (film_id)
+JOIN rental USING (inventory_id)
+JOIN payment USING (rental_id)
+GROUP BY category.name
+ORDER BY SUM(payment.amount) DESC
+LIMIT 5;
 
 
 #1. SELECT statements
 #1a. Select all columns from the actor table.
+
 #1b. Select only the last_name column from the actor table.
+
 #1c. Select only the following columns from the film table.
+
 
 #2. DISTINCT operator
 #2a. Select all distinct (different) last names from the actor table.
+
 #2b. Select all distinct (different) postal codes from the address table.
+
 #2c. Select all distinct (different) ratings from the film table.
+
 
 #3. WHERE clause
 #3a. Select the title, description, rating, movie length columns from the films table that last 3 hours or longer.
+
 #3b. Select the payment id, amount, and payment date columns from the payments table for payments made on or after 05/27/2005.
+
 #3c. Select the primary key, amount, and payment date columns from the payment table for payments made on 05/27/2005.
+
 #3d. Select all columns from the customer table for rows that have a last names beginning with S and a first names ending with N.
+
 #3e. Select all columns from the customer table for rows where the customer is inactive or has a last name beginning with "M".
+
 #3f. Select all columns from the category table for rows where the primary key is greater than 4 and the name field begins with either C, S or T.
+
 #3g. Select all columns minus the password column from the staff table for rows that contain a password.
+
 #3h. Select all columns minus the password column from the staff table for rows that do not contain a password.
+
 
 #4.IN operator
 #4a. Select the phone and district columns from the address table for addresses in California, England, Taipei, or West Java.
+
 #4b. Select the payment id, amount, and payment date columns from the payment table for payments made on 05/25/2005, 05/27/2005, and 05/29/2005. (Use the IN operator and the DATE function, instead of the AND operator as in previous exercises.)
+
 #4c. Select all columns from the film table for films rated G, PG-13 or NC-17.
+
 
 #5. BETWEEN operator
 #5a. Select all columns from the payment table for payments made between midnight 05/25/2005 and 1 second before midnight 05/26/2005.
+
 #5b. Select the following columns from the film table for films where the length of the description is between 100 and 120.
 #Hint: total_rental_cost = rental_duration * rental_rate
 
+
 #6. LIKE operator
 #6a. Select the following columns from the film table for rows where the description begins with "A Thoughtful".
+
 #6b. Select the following columns from the film table for rows where the description ends with the word "Boat".
+
 #6c. Select the following columns from the film table where the description contains the word "Database" and the length of the film is greater than 3 hours.
+
 
 #7. LIMIT Operator
 #7a. Select all columns from the payment table and only include the first 20 rows.
+
 #7b. Select the payment date and amount columns from the payment table for rows where the payment amount is greater than 5, and only select rows whose zero-based index in the result set is between 1000-2000.
+
 #7c. Select all columns from the customer table, limiting results to those where the zero-based index is between 101-200.
+
 
 #8. ORDER BY statement
 #8a. Select all columns from the film table and order rows by the length field in ascending order.
+
 #8b. Select all distinct ratings from the film table ordered by rating in descending order.
+
 #8c. Select the payment date and amount columns from the payment table for the first 20 payments ordered by payment amount in descending order.
+
 #8d. Select the title, description, special features, length, and rental duration columns from the film table for the first 10 films with behind the scenes footage under 2 hours in length and a rental duration between 5 and 7 days, ordered by length in descending order.
+
 
 #9. JOINs
 #9a. Select customer first_name/last_name and actor first_name/last_name columns from performing a left join between the customer and actor column on the last_name column in each table. (i.e. customer.last_name = actor.last_name)
     -- Label customer first_name/last_name columns as customer_first_name/customer_last_name
     -- Label actor first_name/last_name columns in a similar fashion.
     -- returns correct number of records: 599
+
 #9b. Select the customer first_name/last_name and actor first_name/last_name columns from performing a /right join between the customer and actor column on the last_name column in each table. (i.e. customer.last_name = actor.last_name)
     -- returns correct number of records: 200
+
 #9c. Select the customer first_name/last_name and actor first_name/last_name columns from performing an inner join between the customer and actor column on the last_name column in each table. (i.e. customer.last_name = actor.last_name)
     -- returns correct number of records: 43
+
 #9d. Select the city name and country name columns from the city table, performing a left join with the country table to get the country name column.
     -- Returns correct records: 600
+
 #9e. Select the title, description, release year, and language name columns from the film table, performing a left join with the language table to get the "language" column.
     -- Label the language.name column as "language"
     -- Returns 1000 rows
+
 #9f. Select the first_name, last_name, address, address2, city name, district, and postal code columns from the staff table, performing 2 left joins with the address table then the city table to get the address and city related columns.
     -- returns correct number of rows: 2
 
