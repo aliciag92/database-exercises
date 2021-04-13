@@ -612,26 +612,58 @@ LIMIT 10;
     -- Label customer first_name/last_name columns as customer_first_name/customer_last_name
     -- Label actor first_name/last_name columns in a similar fashion.
     -- returns correct number of records: 599
+SELECT c.first_name AS "customer_first_name", 
+	c.last_name AS "customer_last_name",
+	a.first_name AS "actor_first_name",
+	a.last_name AS "actor_last_name"
+FROM customer AS c
+LEFT JOIN actor AS a ON c.last_name = a.last_name;
 
 #9b. Select the customer first_name/last_name and actor first_name/last_name columns from performing a /right join between the customer and actor column on the last_name column in each table. (i.e. customer.last_name = actor.last_name)
     -- returns correct number of records: 200
+SELECT c.first_name AS "customer_first_name", 
+	c.last_name AS "customer_last_name",
+	a.first_name AS "actor_first_name",
+	a.last_name AS "actor_last_name"
+FROM customer AS c
+RIGHT JOIN actor AS a ON c.last_name = a.last_name;
 
 #9c. Select the customer first_name/last_name and actor first_name/last_name columns from performing an inner join between the customer and actor column on the last_name column in each table. (i.e. customer.last_name = actor.last_name)
     -- returns correct number of records: 43
+SELECT c.first_name AS "customer_first_name", 
+	c.last_name AS "customer_last_name",
+	a.first_name AS "actor_first_name",
+	a.last_name AS "actor_last_name"
+FROM customer AS c
+INNER JOIN actor AS a ON c.last_name = a.last_name;
 
 #9d. Select the city name and country name columns from the city table, performing a left join with the country table to get the country name column.
     -- Returns correct records: 600
+SELECT city, country
+FROM city
+LEFT JOIN country USING(country_id);
 
 #9e. Select the title, description, release year, and language name columns from the film table, performing a left join with the language table to get the "language" column.
     -- Label the language.name column as "language"
     -- Returns 1000 rows
+SELECT title, description, release_year, language.name AS "language"
+FROM film
+LEFT JOIN language USING(language_id);
 
 #9f. Select the first_name, last_name, address, address2, city name, district, and postal code columns from the staff table, performing 2 left joins with the address table then the city table to get the address and city related columns.
     -- returns correct number of rows: 2
-
+SELECT first_name, last_name, address, address2, city, district, postal_code
+FROM staff
+LEFT JOIN address USING(address_id)
+LEFT JOIN city USING(city_id);
 
 #1. What is the average replacement cost of a film? Does this change depending on the rating of the film?
+SELECT AVG(replacement_cost)
+FROM film;
 
+SELECT rating, AVG(replacement_cost)
+FROM film
+GROUP BY rating;
 
 +-----------------------+
 | AVG(replacement_cost) |
@@ -653,7 +685,10 @@ LIMIT 10;
 
 
 #2. How many different films of each genre are in the database?
-
+SELECT name, COUNT(name) AS "count"
+FROM category
+JOIN film_category USING(category_id)
+GROUP BY name;
 
 +-------------+-------+
 | name        | count |
@@ -679,7 +714,13 @@ LIMIT 10;
 
 
 #3. What are the 5 frequently rented films?
-
+SELECT title, count(*) AS total
+FROM film
+JOIN inventory USING (film_id)
+JOIN rental USING (inventory_id)
+GROUP BY title
+ORDER BY total DESC
+LIMIT 5;
 
 +---------------------+-------+
 | title               | total |
@@ -694,7 +735,14 @@ LIMIT 10;
 
 
 #4. What are the most most profitable films (in terms of gross revenue)?
-
+SELECT title, SUM(amount) AS total
+FROM film
+JOIN inventory USING (film_id)
+JOIN rental USING (inventory_id)
+JOIN payment USING (rental_id)
+GROUP BY title
+ORDER BY total DESC
+LIMIT 5;
 
 +-------------------+--------+
 | title             | total  |
@@ -709,7 +757,13 @@ LIMIT 10;
 
 
 #5. Who is the best customer?
-
+SELECT CONCAT(last_name, ', ', first_name) AS name, SUM(amount) AS total
+FROM customer
+JOIN rental USING (customer_id)
+JOIN payment USING (rental_id)
+GROUP BY name
+ORDER BY total DESC
+LIMIT 1;
 
 +------------+--------+
 | name       | total  |
@@ -720,7 +774,12 @@ LIMIT 10;
 
 
 #6. Who are the most popular actors (that have appeared in the most films)?
-
+SELECT CONCAT(first_name, ', ', last_name) AS actor_name, COUNT(*) AS total
+FROM actor
+JOIN film_actor USING(actor_id)
+GROUP BY actor_name
+ORDER BY total DESC
+LIMIT 10; 
 
 +-----------------+-------+
 | actor_name      | total |
@@ -735,7 +794,13 @@ LIMIT 10;
 
 
 #7. What are the sales for each store for each month in 2005?
-
+SELECT CONCAT(YEAR(payment_date), '-', '0', MONTH(payment_date)) AS month, store_id, SUM(amount) AS sales
+FROM store
+JOIN inventory USING(store_id)
+JOIN rental USING(inventory_id)
+JOIN payment USING(rental_id)
+WHERE payment_date LIKE '2005%'
+GROUP BY month, store_id;
 
 +---------+----------+----------+
 | month   | store_id | sales    |
@@ -753,7 +818,14 @@ LIMIT 10;
 
 
 #8.Bonus: Find the film title, customer name, customer phone number, and customer address for all the outstanding DVDs.
-
+SELECT title, CONCAT(customer.last_name, ', ', customer.first_name) AS customer_name, address.phone, address.address
+FROM address 
+JOIN customer USING(address_id)
+JOIN payment USING (customer_id)
+JOIN rental USING (rental_id)
+JOIN inventory USING (inventory_id)
+JOIN film USING (film_id)
+WHERE rental.return_date IS NULL;
 
 +------------------------+------------------+--------------+
 | title                  | customer_name    | phone        |
